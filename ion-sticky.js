@@ -20,7 +20,7 @@ angular.module('ion-sticky', ['ionic'])
                 var createStickyClone = function ($element) {
                     clone = $element.clone().css({
                         position: 'absolute',
-                        top: $ionicPosition.position(scroll).top + "px", // put to top
+                        transform: 'translate3d(0,' + $ionicPosition.position(scroll).top + 'px,0)', // put to top
                         left: 0,
                         right: 0
                     });
@@ -55,18 +55,18 @@ angular.module('ion-sticky', ['ionic'])
                     //console.log(performance.now());
                     var active = null;
                     var dividers = [];
+
                     var tmp = $element[0].getElementsByClassName("item-divider");
 
                     for (var i = 0; i < tmp.length; ++i) dividers.push(angular.element(tmp[i]));
-
                     for (var i = 0; i < dividers.length; ++i) { // can be changed to binary search
 
                         var scrollTop = $ionicPosition.position(scroll).top;
                         var dividerTop = $ionicPosition.offset(dividers[i]).top;
                         var dividerHeight = dividers[i].prop('offsetHeight');
 
-                        if (dividerTop - dividerHeight * 3 - minHeight < 0) { // this equals to jquery outerHeight
-                            //     if is uppermost divider and its formers divider top-offset minus its height (40) plus the height of the next divider (40) are > 0 make it active                (dividers[i].prop('offsetHeight') + dividers[i + 1].prop('offsetHeight'))
+                        if (dividerTop < 95 + dividerHeight) {
+                            //  if is uppermost divider and its formers divider top-offset minus its height (40) plus the height of the next divider (40) are > 0 make it active                (dividers[i].prop('offsetHeight') + dividers[i + 1].prop('offsetHeight'))
                             if (i === dividers.length - 1 || $ionicPosition.offset(dividers[i + 1]).top - 95 > 0) {
 
                                 if (dividerTop <= scrollTop) {
@@ -75,25 +75,40 @@ angular.module('ion-sticky', ['ionic'])
                                 }
 
                                 if (i !== 0 && dividerTop < 95 && dividerTop > 0) {
-                                    if (clone) angular.element(clone)[0].style.top = -dividerHeight + 'px'; angular.element(clone)[0].style.transform = 'translate3d(0,' + dividerTop + 'px,0)';
+                                    if (clone) {
+                                        angular.element(clone)[0].style.transform = 'translate3d(0,' + (dividerTop - 40) + 'px,0)';
+                                    }
+
                                     active = lastActive ? lastActive : dividers[i][0];
-                                    //break;
                                 }
 
+                            }
 
+                        }
+
+                    }
+
+                    for (var i = 0; i < dividers.length; ++i) {
+                        var dividerTop = $ionicPosition.offset(dividers[i]).top;
+                        if (dividerTop > 95 && dividerTop < 300) {
+                            if (clone) {
+                                angular.element(clone)[0].style.transform = 'translate3d(0,68px,0)';
                             }
                         }
                     }
 
                     if (lastActive != active) {
                         removeStickyClone();
-                        createStickyClone(angular.element(active));
+                        if (active != null) {
+                            createStickyClone(angular.element(active));
+                        }
                         lastActive = active;
                         //if (active != null)
                         //  createStickyClone(angular.element(active));
                     }
                     //console.log(performance.now());
-                }, 50);
+                }, 100);
+
                 scroll.on('scroll', function (event) {
                     updateSticky();
                 });
