@@ -6,7 +6,7 @@ angular.module('ion-sticky', ['ionic'])
             link: function ($scope, $element, $attr, $ionicScroll) {
                 var scroll = angular.element($ionicScroll.element);
                 var clone;
-                var cloneVal = function(original, to) {
+                var cloneVal = function (original, to) {
                     var my_textareas = original.getElementsByTagName('textarea');
                     var result_textareas = to.getElementsByTagName('textarea');
                     var my_selects = original.getElementsByTagName('select');
@@ -37,8 +37,9 @@ angular.module('ion-sticky', ['ionic'])
                 };
 
                 var removeStickyClone = function () {
-                    if (clone)
+                    if (clone) {
                         clone.remove();
+                    }
                     clone = null;
                 };
 
@@ -50,30 +51,49 @@ angular.module('ion-sticky', ['ionic'])
 
                 var lastActive;
                 var minHeight = $attr.minHeight ? $attr.minHeight : 0;
-                var updateSticky = ionic.throttle(function() {
+                var updateSticky = ionic.throttle(function () {
                     //console.log(performance.now());
                     var active = null;
                     var dividers = [];
                     var tmp = $element[0].getElementsByClassName("item-divider");
+
                     for (var i = 0; i < tmp.length; ++i) dividers.push(angular.element(tmp[i]));
+
                     for (var i = 0; i < dividers.length; ++i) { // can be changed to binary search
-                        if ($ionicPosition.offset(dividers[i]).top - dividers[i].prop('offsetHeight') - minHeight < 0) { // this equals to jquery outerHeight
-                            if (i === dividers.length-1 || $ionicPosition.offset(dividers[i+1]).top -
-                                 (dividers[i].prop('offsetHeight') + dividers[i+1].prop('offsetHeight')) - minHeight > 0) {
-                                active = dividers[i][0];
-                                break;
+
+                        var scrollTop = $ionicPosition.position(scroll).top;
+                        var dividerTop = $ionicPosition.offset(dividers[i]).top;
+                        var dividerHeight = dividers[i].prop('offsetHeight');
+
+                        if (dividerTop - dividerHeight * 3 - minHeight < 0) { // this equals to jquery outerHeight
+                            //     if is uppermost divider and its formers divider top-offset minus its height (40) plus the height of the next divider (40) are > 0 make it active                (dividers[i].prop('offsetHeight') + dividers[i + 1].prop('offsetHeight'))
+                            if (i === dividers.length - 1 || $ionicPosition.offset(dividers[i + 1]).top - 95 > 0) {
+
+                                if (dividerTop <= scrollTop) {
+                                    active = dividers[i][0];
+                                    break;
+                                }
+
+                                if (i !== 0 && dividerTop < 95 && dividerTop > 0) {
+                                    if (clone) angular.element(clone)[0].style.top = -dividerHeight + 'px'; angular.element(clone)[0].style.transform = 'translate3d(0,' + dividerTop + 'px,0)';
+                                    active = lastActive ? lastActive : dividers[i][0];
+                                    //break;
+                                }
+
+
                             }
                         }
                     }
 
                     if (lastActive != active) {
                         removeStickyClone();
+                        createStickyClone(angular.element(active));
                         lastActive = active;
-                        if (active != null)
-                            createStickyClone(angular.element(active));
+                        //if (active != null)
+                        //  createStickyClone(angular.element(active));
                     }
                     //console.log(performance.now());
-                }, 200);
+                }, 50);
                 scroll.on('scroll', function (event) {
                     updateSticky();
                 });
