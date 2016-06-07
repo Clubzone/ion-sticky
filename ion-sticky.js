@@ -32,6 +32,13 @@ angular.module('ion-sticky', ['ionic'])
 
                     scroll.parent().append(clone);
 
+                    // hide existing element
+                    $element[0].style.opacity = 0;
+
+                    $timeout(function() {
+                      $element[0].style.opacity = 1;
+                    }, 1500);
+
                     // compile the clone so that anything in it is in Angular lifecycle.
                     $compile(clone)($scope);
                 };
@@ -92,7 +99,7 @@ angular.module('ion-sticky', ['ionic'])
                         var dividerTop = $ionicPosition.offset(dividers[i]).top;
                         if (dividerTop > 95 && dividerTop < 300) {
                             if (clone) {
-                                angular.element(clone)[0].style.transform = 'translate3d(0,68px,0)';
+                                angular.element(clone)[0].style.transform = 'translate3d(0,59px,0)';
                             }
                         }
                     }
